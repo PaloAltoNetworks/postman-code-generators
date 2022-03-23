@@ -1,5 +1,5 @@
 {
-  "name": "postman-code-generators",
+  "name": "@paloaltonetworks/postman-code-generators",
   "version": "1.1.5",
   "description": "Generates code snippets for a postman collection",
   "main": "index.js",
@@ -19,11 +19,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/postmanlabs/code-generators"
+    "url": "https://github.com/PaloAltoNetworks/code-generators"
   },
   "author": "Postman Labs <help@getpostman.com>",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/postmanlabs/code-generators",
+  "homepage": "https://github.com/PaloAltoNetworks/code-generators",
   "dependencies": {
     "async": "2.6.3",
     "path": "0.12.7",
@@ -31,7 +31,7 @@
     "shelljs": "0.8.4"
   },
   "devDependencies": {
-    "axios": "^0.26.1",
+    "axios": "0.26.1",
     "browserify": "14.5.0",
     "chai": "4.3.6",
     "chalk": "2.4.2",
@@ -42,7 +42,7 @@
     "eslint-plugin-lodash": "2.7.0",
     "eslint-plugin-mocha": "4.12.1",
     "eslint-plugin-security": "1.4.0",
-    "form-data": "^4.0.0",
+    "form-data": "4.0.0",
     "istanbul": "0.4.5",
     "js-yaml": "3.14.0",
     "jsdoc": "3.6.10",
