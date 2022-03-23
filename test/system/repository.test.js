@@ -11,14 +11,12 @@ describe('project repository', function () {
   var fs = require('fs');
 
   describe('package.json', function () {
-    var content,
-      json;
+    var content, json;
 
     try {
       content = fs.readFileSync('./package.json').toString();
       json = JSON.parse(content);
-    }
-    catch (e) {
+    } catch (e) {
       console.error(e);
       content = '';
       json = {};
@@ -31,8 +29,14 @@ describe('project repository', function () {
 
     describe('package.json JSON data', function () {
       it('must have valid name, description and author', function () {
-        expect(json).to.have.property('name', 'postman-code-generators');
-        expect(json).to.have.property('author', 'Postman Labs <help@getpostman.com>');
+        expect(json).to.have.property(
+          'name',
+          '@paloaltonetworks/postman-code-generators'
+        );
+        expect(json).to.have.property(
+          'author',
+          'Postman Labs <help@getpostman.com>'
+        );
         expect(json).to.have.property('license', 'Apache-2.0');
 
         expect(json).to.have.property('repository');
@@ -43,10 +47,11 @@ describe('project repository', function () {
 
       it('must have a valid version string in form of <major>.<minor>.<revision>', function () {
         // eslint-disable-next-line max-len
-        expect(json.version).to.match(/^((\d+)\.(\d+)\.(\d+))(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?$/);
+        expect(json.version).to.match(
+          /^((\d+)\.(\d+)\.(\d+))(?:-([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?(?:\+([\dA-Za-z-]+(?:\.[\dA-Za-z-]+)*))?$/
+        );
       });
     });
-
 
     describe('dependencies', function () {
       it('must exist', function () {
@@ -54,10 +59,15 @@ describe('project repository', function () {
       });
 
       it('must point to a valid and precise (no * or ^) semver', function () {
-        json.dependencies && Object.keys(json.dependencies).forEach(function (item) {
-          expect(json.dependencies[item]).to.match(new RegExp('^((\\d+)\\.(\\d+)\\.(\\d+))(?:-' +
-                        '([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?(?:\\+([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?$'));
-        });
+        json.dependencies &&
+          Object.keys(json.dependencies).forEach(function (item) {
+            expect(json.dependencies[item]).to.match(
+              new RegExp(
+                '^((\\d+)\\.(\\d+)\\.(\\d+))(?:-' +
+                  '([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?(?:\\+([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?$'
+              )
+            );
+          });
       });
     });
 
@@ -67,18 +77,24 @@ describe('project repository', function () {
       });
 
       it('must point to a valid and precise (no * or ^) semver', function () {
-        json.devDependencies && Object.keys(json.devDependencies).forEach(function (item) {
-          expect(json.devDependencies[item]).to.match(new RegExp('^((\\d+)\\.(\\d+)\\.(\\d+))(?:-' +
-                        '([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?(?:\\+([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?$'));
-        });
+        json.devDependencies &&
+          Object.keys(json.devDependencies).forEach(function (item) {
+            expect(json.devDependencies[item]).to.match(
+              new RegExp(
+                '^((\\d+)\\.(\\d+)\\.(\\d+))(?:-' +
+                  '([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?(?:\\+([\\dA-Za-z\\-]+(?:\\.[\\dA-Za-z\\-]+)*))?$'
+              )
+            );
+          });
       });
 
       it('should not overlap dependencies', function () {
         var clean = [];
 
-        json.devDependencies && Object.keys(json.devDependencies).forEach(function (item) {
-          !json.dependencies[item] && clean.push(item);
-        });
+        json.devDependencies &&
+          Object.keys(json.devDependencies).forEach(function (item) {
+            !json.dependencies[item] && clean.push(item);
+          });
 
         expect(Object.keys(json.devDependencies)).to.eql(clean);
       });
@@ -125,7 +141,6 @@ describe('project repository', function () {
         expect(_.isEmpty(gitignore)).to.not.be.ok;
       });
     });
-
   });
 
   describe('.eslintrc', function () {
