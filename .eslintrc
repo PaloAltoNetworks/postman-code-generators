@@ -158,7 +158,7 @@
     "brace-style": [2, "stroustrup", { "allowSingleLine": true }],
     "camelcase": "off",
     "capitalized-comments": "off",
-    "comma-dangle": ["error", "never"],
+    "comma-dangle": ["warn", "never"],
     "comma-spacing": [2, { "before": false, "after": true }],
     "comma-style": ["error", "last"],
     "computed-property-spacing": "error",

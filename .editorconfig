@@ -10,6 +10,7 @@ max_length = 120
 trim_trailing_whitespace = true
 insert_final_newline = true
 quote_type = single
+comma_dangle = none
 
 [*.{json, yml}]
 indent_size = 2
