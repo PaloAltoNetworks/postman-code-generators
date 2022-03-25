@@ -1,5 +1,5 @@
 var expect = require('chai').expect,
-  sdk = require('postman-collection'),
+  sdk = require('@paloaltonetworks/postman-collection'),
   sanitize = require('../../lib/util').sanitize,
   parseBody = require('../../lib/parseRequest').parseBody,
   getOptions = require('../../lib/index').getOptions,
@@ -18,18 +18,19 @@ describe('nodejs-axios convert function', function () {
       request = new sdk.Request(mainCollection.item[0].request);
       options = {
         indentType: 'Tab',
-        indentCount: 1
+        indentCount: 1,
       };
       convert(request, options, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
-          return;
         }
 
         expect(snippet).to.be.a('string');
         snippetArray = snippet.split('\n');
         for (var i = 0; i < snippetArray.length; i++) {
-          if (snippetArray[i] === 'var config = {') { line_no = i + 1; }
+          if (snippetArray[i] === 'var config = {') {
+            line_no = i + 1;
+          }
         }
         expect(snippetArray[line_no].charAt(0)).to.equal('\t');
       });
@@ -38,12 +39,11 @@ describe('nodejs-axios convert function', function () {
     it('should return snippet with timeout property when timeout is set to non zero', function () {
       request = new sdk.Request(mainCollection.item[0].request);
       options = {
-        requestTimeout: 1000
+        requestTimeout: 1000,
       };
       convert(request, options, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
-          return;
         }
         expect(snippet).to.be.a('string');
         expect(snippet).to.include('timeout: 1000');
@@ -52,66 +52,64 @@ describe('nodejs-axios convert function', function () {
 
     it('should use JSON.parse if the content-type is application/vnd.api+json', function () {
       request = new sdk.Request({
-        'method': 'POST',
-        'header': [
+        method: 'POST',
+        header: [
           {
-            'key': 'Content-Type',
-            'value': 'application/vnd.api+json'
-          }
+            key: 'Content-Type',
+            value: 'application/vnd.api+json',
+          },
         ],
-        'body': {
-          'mode': 'raw',
-          'raw': '{"data": {"hello": "world"} }'
+        body: {
+          mode: 'raw',
+          raw: '{"data": {"hello": "world"} }',
         },
-        'url': {
-          'raw': 'https://postman-echo.com/get',
-          'protocol': 'https',
-          'host': [
-            'postman-echo',
-            'com'
-          ],
-          'path': [
-            'get'
-          ]
-        }
+        url: {
+          raw: 'https://postman-echo.com/get',
+          protocol: 'https',
+          host: ['postman-echo', 'com'],
+          path: ['get'],
+        },
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.contain('JSON.stringify({\n  "data": {\n    "hello": "world"\n  }\n})');
+        expect(snippet).to.contain(
+          'JSON.stringify({\n  "data": {\n    "hello": "world"\n  }\n})'
+        );
       });
     });
 
-    it('should return snippet with maxRedirects property set to ' +
-        '0 for no follow redirect', function () {
-      request = new sdk.Request(mainCollection.item[0].request);
-      options = {
-        followRedirect: false
-      };
-      convert(request, options, function (error, snippet) {
-        if (error) {
-          expect.fail(null, null, error);
-          return;
-        }
+    it(
+      'should return snippet with maxRedirects property set to ' +
+        '0 for no follow redirect',
+      function () {
+        request = new sdk.Request(mainCollection.item[0].request);
+        options = {
+          followRedirect: false,
+        };
+        convert(request, options, function (error, snippet) {
+          if (error) {
+            expect.fail(null, null, error);
+          }
 
-        expect(snippet).to.be.a('string');
-        expect(snippet).to.include('maxRedirects: 0');
-      });
-    });
+          expect(snippet).to.be.a('string');
+          expect(snippet).to.include('maxRedirects: 0');
+        });
+      }
+    );
 
     it('should return valid code snippet for no headers and no body', function () {
       reqObject = {
-        'description': 'This is a sample POST request without headers and body',
-        'url': 'https://echo.getpostman.com/post',
-        'method': 'POST'
+        description: 'This is a sample POST request without headers and body',
+        url: 'https://echo.getpostman.com/post',
+        method: 'POST',
       };
       request = new sdk.Request(reqObject);
       convert(request, options, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
-          return;
         }
         expect(snippet).to.be.a('string');
         expect(snippet).to.include('headers: { }');
@@ -124,10 +122,8 @@ describe('nodejs-axios convert function', function () {
       request.body[request.body.mode] = {};
 
       convert(request, options, function (error, snippet) {
-
         if (error) {
           expect.fail(null, null, error);
-          return;
         }
         expect(snippet).to.be.a('string');
         expect(snippet).to.not.include('body:');
@@ -136,18 +132,18 @@ describe('nodejs-axios convert function', function () {
 
     it('should generate snippet for file body mode', function () {
       request = new sdk.Request({
-        'url': 'https://echo.getpostman.com/post',
-        'method': 'POST',
-        'body': {
-          'mode': 'file',
-          'file': [
+        url: 'https://echo.getpostman.com/post',
+        method: 'POST',
+        body: {
+          mode: 'file',
+          file: [
             {
-              'key': 'fileName',
-              'src': 'file',
-              'type': 'file'
-            }
-          ]
-        }
+              key: 'fileName',
+              src: 'file',
+              type: 'file',
+            },
+          ],
+        },
       });
       options = { indentType: 'Space', indentCount: 2 };
       convert(request, options, function (error, snippet) {
@@ -161,28 +157,23 @@ describe('nodejs-axios convert function', function () {
 
     it('should add content type if formdata field contains a content-type', function () {
       request = new sdk.Request({
-        'method': 'POST',
-        'body': {
-          'mode': 'formdata',
-          'formdata': [
+        method: 'POST',
+        body: {
+          mode: 'formdata',
+          formdata: [
             {
-              'key': 'json',
-              'value': '{"hello": "world"}',
-              'contentType': 'application/json',
-              'type': 'text'
-            }
-          ]
-        },
-        'url': {
-          'raw': 'http://postman-echo.com/post',
-          'host': [
-            'postman-echo',
-            'com'
+              key: 'json',
+              value: '{"hello": "world"}',
+              contentType: 'application/json',
+              type: 'text',
+            },
           ],
-          'path': [
-            'post'
-          ]
-        }
+        },
+        url: {
+          raw: 'http://postman-echo.com/post',
+          host: ['postman-echo', 'com'],
+          path: ['post'],
+        },
       });
 
       convert(request, {}, function (error, snippet) {
@@ -190,7 +181,9 @@ describe('nodejs-axios convert function', function () {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.contain('data.append(\'json\', \'{"hello": "world"}\', {contentType: \'application/json\'});'); // eslint-disable-line max-len
+        expect(snippet).to.contain(
+          "data.append('json', '{\"hello\": \"world\"}', {contentType: 'application/json'});"
+        ); // eslint-disable-line max-len
       });
     });
 
@@ -228,82 +221,86 @@ describe('nodejs-axios convert function', function () {
           }
         });
         // -2 because last one is a newline
-        const lastLine = snippetArray[snippetArray.length - 2]
+        const lastLine = snippetArray[snippetArray.length - 2];
         expect(lastLine.charAt(lastLine.length - 1)).to.equal(';');
       });
     });
 
-    it('should return snippet with no trailing comma when requestTimeout ' +
-      'is set to non zero', function () {
-      request = new sdk.Request(mainCollection.item[0].request);
-      options = {
-        requestTimeout: 1000
-      };
-      convert(request, options, function (error, snippet) {
-        if (error) {
-          expect.fail(null, null, error);
-          return;
-        }
+    it(
+      'should return snippet with no trailing comma when requestTimeout ' +
+        'is set to non zero',
+      function () {
+        request = new sdk.Request(mainCollection.item[0].request);
+        options = {
+          requestTimeout: 1000,
+        };
+        convert(request, options, function (error, snippet) {
+          if (error) {
+            expect.fail(null, null, error);
+          }
 
-        expect(snippet).to.be.a('string');
-        expect(snippet).to.not.include('timeout: 1000,');
-        expect(snippet).to.include('timeout: 1000');
-      });
-    });
+          expect(snippet).to.be.a('string');
+          expect(snippet).to.not.include('timeout: 1000,');
+          expect(snippet).to.include('timeout: 1000');
+        });
+      }
+    );
 
-    it('should return snippet with just a single comma when requestTimeout ' +
-      'is set to non zero and followRedirect as false', function () {
-      request = new sdk.Request(mainCollection.item[0].request);
-      options = {
-        requestTimeout: 1000,
-        followRedirect: false,
-        indentCount: 1,
-        indentType: 'space'
-      };
-      convert(request, options, function (error, snippet) {
-        if (error) {
-          expect.fail(null, null, error);
-          return;
-        }
+    it(
+      'should return snippet with just a single comma when requestTimeout ' +
+        'is set to non zero and followRedirect as false',
+      function () {
+        request = new sdk.Request(mainCollection.item[0].request);
+        options = {
+          requestTimeout: 1000,
+          followRedirect: false,
+          indentCount: 1,
+          indentType: 'space',
+        };
+        convert(request, options, function (error, snippet) {
+          if (error) {
+            expect.fail(null, null, error);
+          }
 
-        expect(snippet).to.be.a('string');
-        expect(snippet).to.not.include('timeout: 1000,,');
-        expect(snippet).to.include('timeout: 1000,\n maxRedirects: 0');
-      });
-    });
+          expect(snippet).to.be.a('string');
+          expect(snippet).to.not.include('timeout: 1000,,');
+          expect(snippet).to.include('timeout: 1000,\n maxRedirects: 0');
+        });
+      }
+    );
 
     it('should not require unused fs', function () {
       request = new sdk.Request({
-        'url': 'https://postman-echo.com/get',
-        'method': 'GET',
-        'body': {
-          'mode': 'raw',
-          'raw': ''
-        }
+        url: 'https://postman-echo.com/get',
+        method: 'GET',
+        body: {
+          mode: 'raw',
+          raw: '',
+        },
       });
       convert(request, {}, (error, snippet) => {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.not.include('const fs = require(\'fs\')');
+        expect(snippet).to.not.include("const fs = require('fs')");
       });
     });
 
     it('should add fs for form-data file upload', function () {
       request = new sdk.Request({
-        'url': 'https://postman-echo.com/post',
-        'method': 'POST',
-        'body': {
-          'mode': 'formdata',
-          'formdata': [
+        url: 'https://postman-echo.com/post',
+        method: 'POST',
+        body: {
+          mode: 'formdata',
+          formdata: [
             {
-              'key': 'fileName',
-              'src': '/some/path/file.txt',
-              'type': 'file'
-            }
-          ]
-        }
+              key: 'fileName',
+              src: '/some/path/file.txt',
+              type: 'file',
+            },
+          ],
+        },
       });
       convert(request, {}, (error, snippet) => {
         if (error) {
@@ -316,116 +313,112 @@ describe('nodejs-axios convert function', function () {
 
     it('should trim header keys and not trim header values', function () {
       var request = new sdk.Request({
-        'method': 'GET',
-        'header': [
+        method: 'GET',
+        header: [
           {
-            'key': '   key_containing_whitespaces  ',
-            'value': '  value_containing_whitespaces  '
-          }
+            key: '   key_containing_whitespaces  ',
+            value: '  value_containing_whitespaces  ',
+          },
         ],
-        'url': {
-          'raw': 'https://google.com',
-          'protocol': 'https',
-          'host': [
-            'google',
-            'com'
-          ]
-        }
+        url: {
+          raw: 'https://google.com',
+          protocol: 'https',
+          host: ['google', 'com'],
+        },
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include('\'key_containing_whitespaces\': \'  value_containing_whitespaces  \'');
+        expect(snippet).to.include(
+          "'key_containing_whitespaces': '  value_containing_whitespaces  '"
+        );
       });
     });
 
     it('should include JSON.stringify in the snippet for raw json bodies', function () {
       var request = new sdk.Request({
-        'method': 'POST',
-        'header': [
+        method: 'POST',
+        header: [
           {
-            'key': 'Content-Type',
-            'value': 'application/json'
-          }
+            key: 'Content-Type',
+            value: 'application/json',
+          },
         ],
-        'body': {
-          'mode': 'raw',
-          'raw': '{\n  "json": "Test-Test"\n}'
+        body: {
+          mode: 'raw',
+          raw: '{\n  "json": "Test-Test"\n}',
         },
-        'url': {
-          'raw': 'https://postman-echo.com/post',
-          'protocol': 'https',
-          'host': [
-            'postman-echo',
-            'com'
-          ],
-          'path': [
-            'post'
-          ]
-        }
+        url: {
+          raw: 'https://postman-echo.com/post',
+          protocol: 'https',
+          host: ['postman-echo', 'com'],
+          path: ['post'],
+        },
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include('data = JSON.stringify({\n  "json": "Test-Test"\n})');
+        expect(snippet).to.include(
+          'data = JSON.stringify({\n  "json": "Test-Test"\n})'
+        );
       });
     });
 
     it('should generate snippets for no files in form data', function () {
       var request = new sdk.Request({
-        'method': 'POST',
-        'header': [],
-        'body': {
-          'mode': 'formdata',
-          'formdata': [
+        method: 'POST',
+        header: [],
+        body: {
+          mode: 'formdata',
+          formdata: [
             {
-              'key': 'no file',
-              'value': '',
-              'type': 'file',
-              'src': []
+              key: 'no file',
+              value: '',
+              type: 'file',
+              src: [],
             },
             {
-              'key': 'no src',
-              'value': '',
-              'type': 'file'
+              key: 'no src',
+              value: '',
+              type: 'file',
             },
             {
-              'key': 'invalid src',
-              'value': '',
-              'type': 'file',
-              'src': {}
-            }
-          ]
-        },
-        'url': {
-          'raw': 'https://postman-echo.com/post',
-          'protocol': 'https',
-          'host': [
-            'postman-echo',
-            'com'
+              key: 'invalid src',
+              value: '',
+              type: 'file',
+              src: {},
+            },
           ],
-          'path': [
-            'post'
-          ]
-        }
+        },
+        url: {
+          raw: 'https://postman-echo.com/post',
+          protocol: 'https',
+          host: ['postman-echo', 'com'],
+          path: ['post'],
+        },
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include('data.append(\'no file\', fs.createReadStream(\'/path/to/file\'));');
-        expect(snippet).to.include('data.append(\'no src\', fs.createReadStream(\'/path/to/file\'));');
-        expect(snippet).to.include('data.append(\'invalid src\', fs.createReadStream(\'/path/to/file\'));');
+        expect(snippet).to.include(
+          "data.append('no file', fs.createReadStream('/path/to/file'));"
+        );
+        expect(snippet).to.include(
+          "data.append('no src', fs.createReadStream('/path/to/file'));"
+        );
+        expect(snippet).to.include(
+          "data.append('invalid src', fs.createReadStream('/path/to/file'));"
+        );
       });
     });
 
     describe('getOptions function', function () {
-
       it('should return an array of specific options', function () {
         expect(getOptions()).to.be.an('array');
       });
@@ -441,7 +434,6 @@ describe('nodejs-axios convert function', function () {
     });
 
     describe('Sanitize function', function () {
-
       it('should return empty string when input is not a string type', function () {
         expect(sanitize(123, false)).to.equal('');
         expect(sanitize(null, false)).to.equal('');
@@ -455,7 +447,6 @@ describe('nodejs-axios convert function', function () {
     });
 
     describe('parseRequest function', function () {
-
       it('should return empty string for empty body', function () {
         expect(parseBody(null, ' ', false)).to.equal('');
       });

@@ -1,5 +1,5 @@
 var expect = require('chai').expect,
-  sdk = require('postman-collection'),
+  sdk = require('@paloaltonetworks/postman-collection'),
   path = require('path'),
   fs = require('fs'),
   args = process.argv.splice(2),
@@ -11,23 +11,29 @@ var expect = require('chai').expect,
 describe('Sanity tests for ' + codegen, function () {
   collections.forEach((collection) => {
     var collectionName = collection;
-    collection = fs.readFileSync(path.resolve(__dirname, '../newman/fixtures/' + collection)).toString();
+    collection = fs
+      .readFileSync(path.resolve(__dirname, '../newman/fixtures/' + collection))
+      .toString();
     collection = JSON.parse(collection);
 
     collection.item.forEach((item) => {
       var request = new sdk.Request(item.request);
-      it('should generate snippet for ' + collectionName.split('.')[0] + ' request: ' + item.name, function (done) {
-        converter.convert(request, {}, function (error, snippet) {
-          if (error) {
-            expect.fail(null, null, error);
-            return done();
-          }
+      it(
+        'should generate snippet for ' +
+          collectionName.split('.')[0] +
+          ' request: ' +
+          item.name,
+        function (done) {
+          converter.convert(request, {}, function (error, snippet) {
+            if (error) {
+              expect.fail(null, null, error);
+            }
 
-          expect(snippet).to.be.a('string');
-          return done();
-        });
-      });
+            expect(snippet).to.be.a('string');
+            return done();
+          });
+        }
+      );
     });
   });
 });
-

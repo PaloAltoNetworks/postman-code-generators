@@ -1,6 +1,6 @@
 {
   "name": "@paloaltonetworks/postman-code-generators",
-  "version": "1.1.5-hotfix.3",
+  "version": "1.1.5-hotfix.5",
   "description": "Generates code snippets for a postman collection",
   "main": "index.js",
   "directories": {
@@ -27,7 +27,7 @@
   "dependencies": {
     "async": "2.6.3",
     "path": "0.12.7",
-    "postman-collection": "3.6.11",
+    "@paloaltonetworks/postman-collection": "^4.1.0",
     "shelljs": "0.8.4"
   },
   "devDependencies": {
