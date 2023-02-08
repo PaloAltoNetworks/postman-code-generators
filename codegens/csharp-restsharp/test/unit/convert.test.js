@@ -1,23 +1,23 @@
 var expect = require('chai').expect,
-  sdk = require('postman-collection'),
+  sdk = require('@paloaltonetworks/postman-collection'),
   convert = require('../../lib/index').convert,
   mainCollection = require('./fixtures/testcollection/collection.json'),
   testCollection = require('./fixtures/testcollection/collectionForEdge.json'),
   getOptions = require('../../lib/index').getOptions,
-  testResponse = require('./fixtures/testresponse.json'),
+  testResponseAsync = require('./fixtures/testResponseAsync.json'),
+  testResponseJsonParams = require('./fixtures/testResponseJsonParams.json'),
   sanitize = require('../../lib/util').sanitize,
   sanitizeOptions = require('../../lib/util').sanitizeOptions;
 
 describe('csharp restsharp function', function () {
-
   describe('csharp-restsharp convert function', function () {
-    it('should return expected snippet', function () {
+    it('should return expected snippet - Async', function () {
       var request = new sdk.Request(mainCollection.item[4].request),
         options = {
           indentCount: 1,
           indentType: 'Tab',
           followRedirect: true,
-          trimRequestBody: true
+          trimRequestBody: true,
         };
 
       convert(request, options, function (error, snippet) {
@@ -25,7 +25,25 @@ describe('csharp restsharp function', function () {
           expect.fail(null, null, error);
           return;
         }
-        expect(snippet).deep.equal(testResponse.result);
+        expect(snippet).deep.equal(testResponseAsync.result);
+      });
+    });
+
+    it('should return expected snippet json params', function () {
+      var request = new sdk.Request(mainCollection.item[5].request),
+        options = {
+          indentCount: 1,
+          indentType: 'Tab',
+          followRedirect: true,
+          trimRequestBody: true,
+        };
+
+      convert(request, options, function (error, snippet) {
+        if (error) {
+          expect.fail(null, null, error);
+          return;
+        }
+        expect(snippet).deep.equal(testResponseJsonParams.result);
       });
     });
   });
@@ -36,7 +54,7 @@ describe('csharp restsharp function', function () {
       options = {
         includeBoilerplate: true,
         indentType: 'Space',
-        indentCount: 2
+        indentCount: 2,
       };
 
     it('should return snippet with boilerplate code given option', function () {
@@ -45,7 +63,11 @@ describe('csharp restsharp function', function () {
           expect.fail(null, null, error);
           return;
         }
-        expect(snippet).to.include('using System;\nusing RestSharp;\nnamespace HelloWorldApplication {\n');
+        expect(snippet).to.include(
+          'using System;\nusing RestSharp;\nusing System.Threading;\nusing' +
+            ' System.Threading.Tasks;\nnamespace HelloWorldApplication {\n'
+        );
+        expect(snippet).to.include('static async Task Main(string[] args) {');
       });
     });
 
@@ -67,122 +89,117 @@ describe('csharp restsharp function', function () {
     });
 
     it('should add client timeout configurations when requestTimeout is set to non zero value', function () {
-      convert(request, {requestTimeout: 5}, function (error, snippet) {
+      convert(request, { requestTimeout: 5 }, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include('client.Timeout = 5');
+        expect(snippet).to.include('MaxTimeout = 5');
       });
     });
 
     it('should add client FollowRedirects configurations when followRedirects is set to false', function () {
-      convert(request, {followRedirect: false}, function (error, snippet) {
+      convert(request, { followRedirect: false }, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include('client.FollowRedirects = false');
+        expect(snippet).to.include('FollowRedirects = false');
       });
     });
 
     it('should trim header keys and not trim header values', function () {
       var request = new sdk.Request({
-        'method': 'GET',
-        'header': [
+        method: 'GET',
+        header: [
           {
-            'key': '  key_containing_whitespaces  ',
-            'value': '  value_containing_whitespaces  '
-          }
+            key: '  key_containing_whitespaces  ',
+            value: '  value_containing_whitespaces  ',
+          },
         ],
-        'url': {
-          'raw': 'https://google.com',
-          'protocol': 'https',
-          'host': [
-            'google',
-            'com'
-          ]
-        }
+        url: {
+          raw: 'https://google.com',
+          protocol: 'https',
+          host: ['google', 'com'],
+        },
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include('request.AddHeader("key_containing_whitespaces", ' +
-        '"  value_containing_whitespaces  ")');
+        expect(snippet).to.include(
+          'request.AddHeader("key_containing_whitespaces", ' +
+            '"  value_containing_whitespaces  ")'
+        );
       });
     });
 
     it('should generate snippets for no files in form data', function () {
       var request = new sdk.Request({
-        'method': 'POST',
-        'header': [],
-        'body': {
-          'mode': 'formdata',
-          'formdata': [
+        method: 'POST',
+        header: [],
+        body: {
+          mode: 'formdata',
+          formdata: [
             {
-              'key': 'no file',
-              'value': '',
-              'type': 'file',
-              'src': []
+              key: 'no file',
+              value: '',
+              type: 'file',
+              src: [],
             },
             {
-              'key': 'no src',
-              'value': '',
-              'type': 'file'
+              key: 'no src',
+              value: '',
+              type: 'file',
             },
             {
-              'key': 'invalid src',
-              'value': '',
-              'type': 'file',
-              'src': {}
-            }
-          ]
-        },
-        'url': {
-          'raw': 'https://postman-echo.com/post',
-          'protocol': 'https',
-          'host': [
-            'postman-echo',
-            'com'
+              key: 'invalid src',
+              value: '',
+              type: 'file',
+              src: {},
+            },
           ],
-          'path': [
-            'post'
-          ]
-        }
+        },
+        url: {
+          raw: 'https://postman-echo.com/post',
+          protocol: 'https',
+          host: ['postman-echo', 'com'],
+          path: ['post'],
+        },
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include('request.AddFile("no file", "/path/to/file"');
+        expect(snippet).to.include(
+          'request.AddFile("no file", "/path/to/file"'
+        );
         expect(snippet).to.include('request.AddFile("no src", "/path/to/file"');
-        expect(snippet).to.include('request.AddFile("invalid src", "/path/to/file"');
+        expect(snippet).to.include(
+          'request.AddFile("invalid src", "/path/to/file"'
+        );
       });
     });
 
     it('should use client.UserAgent instead of AddHeader function', function () {
       const sampleUA = 'Safari/605.1.15',
-        expectValue = `client.UserAgent = "${sampleUA}";`;
+        expectValue = `UserAgent = "${sampleUA}",`;
 
       var request = new sdk.Request({
-        'method': 'GET',
-        'header': [
+        method: 'GET',
+        header: [
           {
-            'key': 'User-Agent',
-            'value': sampleUA
-          }
+            key: 'User-Agent',
+            value: sampleUA,
+          },
         ],
-        'url': {
-          'raw': 'https://google.com',
-          'protocol': 'https',
-          'host': [
-            'google',
-            'com'
-          ]
-        }
+        url: {
+          raw: 'https://google.com',
+          protocol: 'https',
+          host: ['google', 'com'],
+        },
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
@@ -210,7 +227,6 @@ describe('csharp restsharp function', function () {
   });
 
   describe('Sanitize function', function () {
-
     it('should return empty string when input is not a string type', function () {
       expect(sanitize(123, false)).to.equal('');
       expect(sanitize(null, false)).to.equal('');
@@ -231,7 +247,7 @@ describe('csharp restsharp function', function () {
     getOptions().forEach((option) => {
       defaultOptions[option.id] = {
         default: option.default,
-        type: option.type
+        type: option.type,
       };
       if (option.type === 'enum') {
         defaultOptions[option.id].availableOptions = option.availableOptions;
@@ -250,9 +266,15 @@ describe('csharp restsharp function', function () {
       testOptions.trimRequestBody = 'true';
       testOptions.indentType = 'tabSpace';
       sanitizedOptions = sanitizeOptions(testOptions, getOptions());
-      expect(sanitizedOptions.indentCount).to.equal(defaultOptions.indentCount.default);
-      expect(sanitizedOptions.indentType).to.equal(defaultOptions.indentType.default);
-      expect(sanitizedOptions.trimRequestBody).to.equal(defaultOptions.trimRequestBody.default);
+      expect(sanitizedOptions.indentCount).to.equal(
+        defaultOptions.indentCount.default
+      );
+      expect(sanitizedOptions.indentType).to.equal(
+        defaultOptions.indentType.default
+      );
+      expect(sanitizedOptions.trimRequestBody).to.equal(
+        defaultOptions.trimRequestBody.default
+      );
     });
 
     it('should use defaults when option type is valid but value is invalid', function () {
@@ -261,9 +283,15 @@ describe('csharp restsharp function', function () {
       testOptions.indentType = 'spaceTab';
       testOptions.requestTimeout = -3000;
       sanitizedOptions = sanitizeOptions(testOptions, getOptions());
-      expect(sanitizedOptions.indentCount).to.equal(defaultOptions.indentCount.default);
-      expect(sanitizedOptions.indentType).to.equal(defaultOptions.indentType.default);
-      expect(sanitizedOptions.requestTimeout).to.equal(defaultOptions.requestTimeout.default);
+      expect(sanitizedOptions.indentCount).to.equal(
+        defaultOptions.indentCount.default
+      );
+      expect(sanitizedOptions.indentType).to.equal(
+        defaultOptions.indentType.default
+      );
+      expect(sanitizedOptions.requestTimeout).to.equal(
+        defaultOptions.requestTimeout.default
+      );
     });
 
     it('should return the same object when default options are provided', function () {
@@ -288,5 +316,4 @@ describe('csharp restsharp function', function () {
       expect(sanitizedOptions).to.deep.equal(testOptions);
     });
   });
-
 });

@@ -23,6 +23,7 @@ describe('nodejs-axios convert function', function () {
       convert(request, options, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
+          return;
         }
 
         expect(snippet).to.be.a('string');
@@ -44,6 +45,7 @@ describe('nodejs-axios convert function', function () {
       convert(request, options, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
+          return;
         }
         expect(snippet).to.be.a('string');
         expect(snippet).to.include('timeout: 1000');
@@ -92,6 +94,7 @@ describe('nodejs-axios convert function', function () {
         convert(request, options, function (error, snippet) {
           if (error) {
             expect.fail(null, null, error);
+            return;
           }
 
           expect(snippet).to.be.a('string');
@@ -110,6 +113,7 @@ describe('nodejs-axios convert function', function () {
       convert(request, options, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
+          return;
         }
         expect(snippet).to.be.a('string');
         expect(snippet).to.include('headers: { }');
@@ -124,6 +128,7 @@ describe('nodejs-axios convert function', function () {
       convert(request, options, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
+          return;
         }
         expect(snippet).to.be.a('string');
         expect(snippet).to.not.include('body:');
@@ -237,6 +242,7 @@ describe('nodejs-axios convert function', function () {
         convert(request, options, function (error, snippet) {
           if (error) {
             expect.fail(null, null, error);
+            return;
           }
 
           expect(snippet).to.be.a('string');
@@ -260,6 +266,7 @@ describe('nodejs-axios convert function', function () {
         convert(request, options, function (error, snippet) {
           if (error) {
             expect.fail(null, null, error);
+            return;
           }
 
           expect(snippet).to.be.a('string');
@@ -415,6 +422,21 @@ describe('nodejs-axios convert function', function () {
         expect(snippet).to.include(
           "data.append('invalid src', fs.createReadStream('/path/to/file'));"
         );
+      });
+    });
+
+    it('should return snippet with maxBodyLength property as "Infinity"', function () {
+      request = new sdk.Request(mainCollection.item[0].request);
+      options = {
+        requestTimeout: 1000,
+      };
+      convert(request, options, function (error, snippet) {
+        if (error) {
+          expect.fail(null, null, error);
+          return;
+        }
+        expect(snippet).to.be.a('string');
+        expect(snippet).to.include('maxBodyLength: Infinity');
       });
     });
 
