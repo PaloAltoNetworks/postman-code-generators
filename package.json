@@ -1,6 +1,6 @@
 {
   "name": "@paloaltonetworks/postman-code-generators",
-  "version": "1.1.15",
+  "version": "1.5.0-patch.1",
   "description": "Generates code snippets for a postman collection",
   "main": "index.js",
   "directories": {
@@ -28,29 +28,32 @@
     "@paloaltonetworks/postman-collection": "^4.1.0",
     "async": "^3.2.4",
     "path": "^0.12.7",
-    "shelljs": "^0.8.5"
+    "shelljs": "^0.8.5",
+    "lodash": "4.17.21"
   },
   "devDependencies": {
-    "axios": "0.26.1",
     "browserify": "14.5.0",
-    "chai": "4.3.6",
+    "chai": "4.3.7",
     "chalk": "2.4.2",
-    "dependency-check": "2.10.1",
+    "eslint": "5.16.0",
+    "dependency-check": "3.0.0",
     "editorconfig": "0.15.3",
-    "form-data": "4.0.0",
+    "eslint-plugin-jsdoc": "3.15.1",
+    "eslint-plugin-lodash": "2.7.0",
+    "eslint-plugin-mocha": "4.12.1",
+    "eslint-plugin-security": "1.5.0",
     "istanbul": "0.4.5",
-    "js-yaml": "3.14.0",
+    "js-yaml": "3.14.1",
+    "newman": "5.3.2",
     "jsdoc": "3.6.10",
-    "lodash": "4.17.21",
-    "mocha": "^10.0.0",
-    "newman": "5.3.1",
+    "mocha": "6.2.3",
     "nyc": "14.1.1",
     "parse-gitignore": "1.0.1",
     "pretty-ms": "3.2.0",
-    "recursive-readdir": "2.2.2",
-    "watchify": "^4.0.0"
+    "recursive-readdir": "2.2.3",
+    "watchify": "3.11.1"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=12"
   }
 }
