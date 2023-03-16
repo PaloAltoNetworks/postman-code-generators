@@ -1,5 +1,5 @@
 var expect = require('chai').expect,
-  sdk = require('@paloaltonetworks/postman-collection'),
+  sdk = require('postman-collection'),
   sanitize = require('../../lib/util').sanitize,
   convert = require('../../lib/index').convert,
   getOptions = require('../../lib/index').getOptions,
@@ -12,7 +12,7 @@ describe('okhttp convert function', function () {
       options = {
         includeBoilerplate: true,
         indentType: 'Tab',
-        indentCount: 2,
+        indentCount: 2
       };
 
     const SINGLE_SPACE = ' ';
@@ -26,9 +26,7 @@ describe('okhttp convert function', function () {
         snippetArray = snippet.split('\n');
         for (var i = 0; i < snippetArray.length; i++) {
           if (snippetArray[i].startsWith('public class main {')) {
-            expect(snippetArray[i + 1].substr(0, 4)).to.equal(
-              SINGLE_SPACE.repeat(4)
-            );
+            expect(snippetArray[i + 1].substr(0, 4)).to.equal(SINGLE_SPACE.repeat(4));
             expect(snippetArray[i + 1].charAt(4)).to.not.equal(SINGLE_SPACE);
           }
         }
@@ -41,9 +39,7 @@ describe('okhttp convert function', function () {
           expect.fail(null, null, error);
           return;
         }
-        expect(snippet).to.include(
-          'import java.io.*;\nimport okhttp3.*;\npublic class main {\n'
-        );
+        expect(snippet).to.include('import java.io.*;\nimport okhttp3.*;\npublic class main {\n');
       });
     });
 
@@ -53,9 +49,7 @@ describe('okhttp convert function', function () {
           expect.fail(null, null, error);
           return;
         }
-        expect(snippet).to.include(
-          '.setConnectTimeout(1000, TimeUnit.MILLISECONDS)'
-        );
+        expect(snippet).to.include('.setConnectTimeout(1000, TimeUnit.MILLISECONDS)');
       });
     });
 
@@ -88,49 +82,55 @@ describe('okhttp convert function', function () {
 
     it('should trim header keys and not trim header values', function () {
       var request = new sdk.Request({
-        method: 'GET',
-        header: [
+        'method': 'GET',
+        'header': [
           {
-            key: '  key_containing_whitespaces  ',
-            value: '  value_containing_whitespaces  ',
-          },
+            'key': '  key_containing_whitespaces  ',
+            'value': '  value_containing_whitespaces  '
+          }
         ],
-        url: {
-          raw: 'https://google.com',
-          protocol: 'https',
-          host: ['google', 'com'],
-        },
+        'url': {
+          'raw': 'https://google.com',
+          'protocol': 'https',
+          'host': [
+            'google',
+            'com'
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          '.addHeader("key_containing_whitespaces", "  value_containing_whitespaces  ")'
-        );
+        expect(snippet).to.include('.addHeader("key_containing_whitespaces", "  value_containing_whitespaces  ")');
       });
     });
 
     it('should add content type if formdata field contains a content-type', function () {
       request = new sdk.Request({
-        method: 'POST',
-        body: {
-          mode: 'formdata',
-          formdata: [
+        'method': 'POST',
+        'body': {
+          'mode': 'formdata',
+          'formdata': [
             {
-              key: 'json',
-              value: '{"hello": "world"}',
-              contentType: 'application/json',
-              type: 'text',
-            },
+              'key': 'json',
+              'value': '{"hello": "world"}',
+              'contentType': 'application/json',
+              'type': 'text'
+            }
+          ]
+        },
+        'url': {
+          'raw': 'http://postman-echo.com/post',
+          'host': [
+            'postman-echo',
+            'com'
           ],
-        },
-        url: {
-          raw: 'http://postman-echo.com/post',
-          host: ['postman-echo', 'com'],
-          path: ['post'],
-        },
+          'path': [
+            'post'
+          ]
+        }
       });
 
       convert(request, {}, function (error, snippet) {
@@ -138,44 +138,47 @@ describe('okhttp convert function', function () {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.contain(
-          'RequestBody.create(MediaType.parse("application/json"), "{\\"hello\\": \\"world\\"}".getBytes()))'
-        ); // eslint-disable-line max-len
+        expect(snippet).to.contain('RequestBody.create(MediaType.parse("application/json"), "{\\"hello\\": \\"world\\"}".getBytes()))'); // eslint-disable-line max-len
       });
     });
 
     it('should generate snippets for no files in form data', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        header: [],
-        body: {
-          mode: 'formdata',
-          formdata: [
+        'method': 'POST',
+        'header': [],
+        'body': {
+          'mode': 'formdata',
+          'formdata': [
             {
-              key: 'no file',
-              value: '',
-              type: 'file',
-              src: [],
+              'key': 'no file',
+              'value': '',
+              'type': 'file',
+              'src': []
             },
             {
-              key: 'no src',
-              value: '',
-              type: 'file',
+              'key': 'no src',
+              'value': '',
+              'type': 'file'
             },
             {
-              key: 'invalid src',
-              value: '',
-              type: 'file',
-              src: {},
-            },
+              'key': 'invalid src',
+              'value': '',
+              'type': 'file',
+              'src': {}
+            }
+          ]
+        },
+        'url': {
+          'raw': 'https://postman-echo.com/post',
+          'protocol': 'https',
+          'host': [
+            'postman-echo',
+            'com'
           ],
-        },
-        url: {
-          raw: 'https://postman-echo.com/post',
-          protocol: 'https',
-          host: ['postman-echo', 'com'],
-          path: ['post'],
-        },
+          'path': [
+            'post'
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {

@@ -1,5 +1,5 @@
 var expect = require('chai').expect,
-  sdk = require('@paloaltonetworks/postman-collection'),
+  sdk = require('postman-collection'),
   convert = require('../../lib/index').convert,
   mainCollection = require('./fixtures/testcollection/collection.json'),
   testCollection = require('./fixtures/testcollection/collectionForEdge.json'),
@@ -10,12 +10,13 @@ var expect = require('chai').expect,
 // csharpify = require('../../lib/util').csharpify;
 
 describe('csharp httpclient function', function () {
+
   describe('csharp-httpclient convert function', function () {
     it('should return expected snippet', function () {
       var request = new sdk.Request(mainCollection.item[10].request),
         options = {
           indentCount: 1,
-          indentType: 'Tab',
+          indentType: 'Tab'
         };
 
       convert(request, options, function (error, snippet) {
@@ -34,7 +35,7 @@ describe('csharp httpclient function', function () {
       options = {
         includeBoilerplate: true,
         indentType: 'Space',
-        indentCount: 2,
+        indentCount: 2
       };
 
     // it('should return snippet with boilerplate code given option', function () {
@@ -89,13 +90,16 @@ describe('csharp httpclient function', function () {
 
     it('should create custom HttpMethod when method is non-standard', function () {
       var request = new sdk.Request({
-        method: 'NOTNORMAL',
-        header: [],
-        url: {
-          raw: 'https://google.com',
-          protocol: 'https',
-          host: ['google', 'com'],
-        },
+        'method': 'NOTNORMAL',
+        'header': [],
+        'url': {
+          'raw': 'https://google.com',
+          'protocol': 'https',
+          'host': [
+            'google',
+            'com'
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
@@ -107,33 +111,28 @@ describe('csharp httpclient function', function () {
     });
 
     it('should throw when callback is not a function', function () {
-      expect(function () {
-        convert(request, {}, 'not a function');
-      }).to.throw('C#-HttpClient-Converter: Callback is not valid function');
+      expect(function () { convert(request, {}, 'not a function'); })
+        .to.throw('C#-HttpClient-Converter: Callback is not valid function');
     });
 
     it('should add fake body when content type header added to empty body', function () {
       var request = new sdk.Request({
-        method: 'DELETE',
-        body: {},
-        header: [
+        'method': 'DELETE',
+        'body': {},
+        'header': [
           {
-            key: 'Content-Type',
-            value: 'application/json',
-          },
-        ],
+            'key': 'Content-Type',
+            'value': 'application/json'
+          }
+        ]
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
-        expect(snippet).to.include(
-          'var content = new StringContent(string.Empty);'
-        );
-        expect(snippet).to.include(
-          'content.Headers.ContentType = new MediaTypeHeaderValue(' +
-            '"application/json");'
-        );
+        expect(snippet).to.include('var content = new StringContent(string.Empty);');
+        expect(snippet).to.include('content.Headers.ContentType = new MediaTypeHeaderValue(' +
+          '"application/json");');
       });
     });
 
@@ -173,90 +172,101 @@ describe('csharp httpclient function', function () {
 
     it('should include multiple form content when file has multiple sources', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        header: [],
-        body: {
-          mode: 'formdata',
-          formdata: [
+        'method': 'POST',
+        'header': [],
+        'body': {
+          'mode': 'formdata',
+          'formdata': [
             {
-              key: 'no file',
-              value: '',
-              type: 'file',
-              src: ['/test1.txt', '/test2.txt'],
-            },
-          ],
-        },
+              'key': 'no file',
+              'value': '',
+              'type': 'file',
+              'src': [
+                '/test1.txt',
+                '/test2.txt'
+              ]
+            }
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
-        expect(snippet).to.include(
-          'content.Add(new StreamContent(File.OpenRead("/test1.txt")), "no file", "/test1.txt");'
-        );
-        expect(snippet).to.include(
-          'content.Add(new StreamContent(File.OpenRead("/test2.txt")), "no file", "/test2.txt");'
-        );
+        expect(snippet).to
+          .include('content.Add(new StreamContent(File.OpenRead("/test1.txt")), "no file", "/test1.txt");');
+        expect(snippet).to
+          .include('content.Add(new StreamContent(File.OpenRead("/test2.txt")), "no file", "/test2.txt");');
       });
     });
 
     it('should include graphql body in the snippet', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        header: [],
-        body: {
-          mode: 'graphql',
-          graphql: {
-            query: '{ body { graphql } }',
-            variables: '{"variable_key": "variable_value"}',
-          },
+        'method': 'POST',
+        'header': [],
+        'body': {
+          'mode': 'graphql',
+          'graphql': {
+            'query': '{ body { graphql } }',
+            'variables': '{"variable_key": "variable_value"}'
+          }
         },
-        url: {
-          raw: 'http://postman-echo.com/post',
-          protocol: 'http',
-          host: ['postman-echo', 'com'],
-          path: ['post'],
-        },
+        'url': {
+          'raw': 'http://postman-echo.com/post',
+          'protocol': 'http',
+          'host': [
+            'postman-echo',
+            'com'
+          ],
+          'path': [
+            'post'
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          'var content = new StringContent("{\\"query\\":\\"{ body { graphql } }\\",' +
-            '\\"variables\\":{\\"variable_key\\":\\"variable_value\\"}}", null, "application/json");'
-        );
+        expect(snippet).to
+          .include('var content = new StringContent("{\\"query\\":\\"{ body { graphql } }\\",' +
+            '\\"variables\\":{\\"variable_key\\":\\"variable_value\\"}}", null, "application/json");');
+
       });
     });
 
     it('should add blank graphql variables when invalid', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        header: [],
-        body: {
-          mode: 'graphql',
-          graphql: {
-            query: '{ body { graphql } }',
-            variables: '<text>some xml</text>',
-          },
+        'method': 'POST',
+        'header': [],
+        'body': {
+          'mode': 'graphql',
+          'graphql': {
+            'query': '{ body { graphql } }',
+            'variables': '<text>some xml</text>'
+          }
         },
-        url: {
-          raw: 'http://postman-echo.com/post',
-          protocol: 'http',
-          host: ['postman-echo', 'com'],
-          path: ['post'],
-        },
+        'url': {
+          'raw': 'http://postman-echo.com/post',
+          'protocol': 'http',
+          'host': [
+            'postman-echo',
+            'com'
+          ],
+          'path': [
+            'post'
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          'var content = new StringContent("{\\"query\\":\\"{ body { graphql } }\\",' +
-            '\\"variables\\":{}}", null, "application/json");'
-        );
+        expect(snippet).to
+          .include('var content = new StringContent("{\\"query\\":\\"{ body { graphql } }\\",' +
+            '\\"variables\\":{}}", null, "application/json");');
+
       });
     });
 
@@ -267,21 +277,11 @@ describe('csharp httpclient function', function () {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          'content.Add(new StringContent("\'a\'"), "pl");'
-        );
-        expect(snippet).to.include(
-          'content.Add(new StringContent("\\"b\\""), "qu");'
-        );
-        expect(snippet).to.include(
-          'content.Add(new StringContent("d"), "sa");'
-        );
-        expect(snippet).to.include(
-          'content.Add(new StringContent("!@#$%&*()^_+=`~"), "Special");'
-        );
-        expect(snippet).to.include(
-          'content.Add(new StringContent(",./\';[]}{\\":?><|\\\\\\\\"), "more");'
-        );
+        expect(snippet).to.include('content.Add(new StringContent("\'a\'"), "pl");');
+        expect(snippet).to.include('content.Add(new StringContent("\\"b\\""), "qu");');
+        expect(snippet).to.include('content.Add(new StringContent("d"), "sa");');
+        expect(snippet).to.include('content.Add(new StringContent("!@#$%&*()^_+=`~"), "Special");');
+        expect(snippet).to.include('content.Add(new StringContent(",./\';[]}{\\":?><|\\\\\\\\"), "more");');
         expect(snippet).not.to.include('Not Select');
         expect(snippet).not.to.include('Disabled');
       });
@@ -294,70 +294,65 @@ describe('csharp httpclient function', function () {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          'var content = new StringContent("Curabitur auctor, elit nec pulvinar porttitor, ' +
+        expect(snippet).to
+          .include('var content = new StringContent("Curabitur auctor, elit nec pulvinar porttitor, ' +
             'ex augue condimentum enim, eget suscipit urna felis quis neque.\\nSuspendisse sit amet' +
             ' luctus massa, nec venenatis mi. Suspendisse tincidunt massa at nibh efficitur fringilla. ' +
-            'Nam quis congue mi. Etiam volutpat.", null, "text/plain");'
-        );
+            'Nam quis congue mi. Etiam volutpat.", null, "text/plain");');
       });
     });
 
     it('should add a file on file request', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        url: 'https://google.com',
-        header: [],
-        body: {
-          mode: 'file',
-          file: {
-            src: './test.txt',
-          },
-        },
+        'method': 'POST',
+        'url': 'https://google.com',
+        'header': [],
+        'body': {
+          'mode': 'file',
+          'file': {
+            'src': './test.txt'
+          }
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          'request.Content = new StreamContent(File.OpenRead("./test.txt"));'
-        );
+        expect(snippet).to.include('request.Content = new StreamContent(File.OpenRead("./test.txt"));');
       });
     });
 
     it('should add all enabled headers to request', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        url: 'https://postman-echo.com/post',
-        header: [
+        'method': 'POST',
+        'url': 'https://postman-echo.com/post',
+        'header': [
           {
-            key: 'my-header',
-            value: 'my-header-value',
+            'key': 'my-header',
+            'value': 'my-header-value'
           },
           {
-            key: 'Content-Type',
-            value: 'application/json',
+            'key': 'Content-Type',
+            'value': 'application/json'
           },
           {
-            key: 'disabled-header',
-            value: 'diabled-header-value',
-            disabled: true,
-          },
+            'key': 'disabled-header',
+            'value': 'diabled-header-value',
+            'disabled': true
+          }
         ],
-        body: {
-          mode: 'raw',
-          raw: '{\n  "json": "Test-Test"\n}',
-        },
+        'body': {
+          'mode': 'raw',
+          'raw': '{\n  "json": "Test-Test"\n}'
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          'request.Headers.Add("my-header", "my-header-value");'
-        );
+        expect(snippet).to.include('request.Headers.Add("my-header", "my-header-value");');
         expect(snippet).not.to.include('Content-Type');
         expect(snippet).not.to.include('disabled-header');
         expect(snippet).not.to.include('disabled-header-value');
@@ -366,87 +361,81 @@ describe('csharp httpclient function', function () {
 
     it('should skip disabled form url encoded values', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        header: [],
-        url: 'https://postman-echo.com/post',
-        body: {
-          mode: 'urlencoded',
-          urlencoded: [
+        'method': 'POST',
+        'header': [],
+        'url': 'https://postman-echo.com/post',
+        'body': {
+          'mode': 'urlencoded',
+          'urlencoded': [
             {
-              key: 'enabled',
-              value: 'enabled-value',
+              'key': 'enabled',
+              'value': 'enabled-value'
             },
             {
-              key: 'disabled',
-              value: 'disabled-value',
-              disabled: true,
-            },
-          ],
-        },
+              'key': 'disabled',
+              'value': 'disabled-value',
+              'disabled': true
+            }
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).to.include(
-          'collection.Add(new("enabled", "enabled-value"));'
-        );
+        expect(snippet).to.include('collection.Add(new("enabled", "enabled-value"));');
         expect(snippet).not.to.include('disabled');
       });
     });
 
     it('should skip collection initialization when no urlencoded values are enabled', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        header: [],
-        url: 'https://postman-echo.com/post',
-        body: {
-          mode: 'urlencoded',
-          urlencoded: [
+        'method': 'POST',
+        'header': [],
+        'url': 'https://postman-echo.com/post',
+        'body': {
+          'mode': 'urlencoded',
+          'urlencoded': [
             {
-              key: 'disabled',
-              value: 'disabled-value',
-              disabled: true,
-            },
-          ],
-        },
+              'key': 'disabled',
+              'value': 'disabled-value',
+              'disabled': true
+            }
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).not.to.include(
-          'var collection = new List<KeyValuePair<string, string>>();'
-        );
+        expect(snippet).not.to.include('var collection = new List<KeyValuePair<string, string>>();');
       });
     });
 
     it('should skip creating multipart form data content when all values are disabled', function () {
       var request = new sdk.Request({
-        method: 'POST',
-        header: [],
-        url: 'https://postman-echo.com/post',
-        body: {
-          mode: 'formdata',
-          formdata: [
+        'method': 'POST',
+        'header': [],
+        'url': 'https://postman-echo.com/post',
+        'body': {
+          'mode': 'formdata',
+          'formdata': [
             {
-              key: 'disabled',
-              value: 'disabled-value',
-              disabled: true,
-            },
-          ],
-        },
+              'key': 'disabled',
+              'value': 'disabled-value',
+              'disabled': true
+            }
+          ]
+        }
       });
       convert(request, {}, function (error, snippet) {
         if (error) {
           expect.fail(null, null, error);
         }
         expect(snippet).to.be.a('string');
-        expect(snippet).not.to.include(
-          'var content = new MultipartFormDataContent();'
-        );
+        expect(snippet).not.to.include('var content = new MultipartFormDataContent();');
       });
     });
   });
@@ -486,7 +475,7 @@ describe('csharp httpclient function', function () {
     getOptions().forEach((option) => {
       defaultOptions[option.id] = {
         default: option.default,
-        type: option.type,
+        type: option.type
       };
       if (option.type === 'enum') {
         defaultOptions[option.id].availableOptions = option.availableOptions;
@@ -505,15 +494,9 @@ describe('csharp httpclient function', function () {
       testOptions.includeBoilerplate = 'true';
       testOptions.indentType = 'tabSpace';
       sanitizedOptions = sanitizeOptions(testOptions, getOptions());
-      expect(sanitizedOptions.indentCount).to.equal(
-        defaultOptions.indentCount.default
-      );
-      expect(sanitizedOptions.includeBoilerplate).to.equal(
-        defaultOptions.includeBoilerplate.default
-      );
-      expect(sanitizedOptions.indentType).to.equal(
-        defaultOptions.indentType.default
-      );
+      expect(sanitizedOptions.indentCount).to.equal(defaultOptions.indentCount.default);
+      expect(sanitizedOptions.includeBoilerplate).to.equal(defaultOptions.includeBoilerplate.default);
+      expect(sanitizedOptions.indentType).to.equal(defaultOptions.indentType.default);
     });
 
     it('should use defaults when option type is valid but value is invalid', function () {
@@ -522,15 +505,9 @@ describe('csharp httpclient function', function () {
       testOptions.indentType = 'spaceTab';
       testOptions.requestTimeout = -3000;
       sanitizedOptions = sanitizeOptions(testOptions, getOptions());
-      expect(sanitizedOptions.indentCount).to.equal(
-        defaultOptions.indentCount.default
-      );
-      expect(sanitizedOptions.indentType).to.equal(
-        defaultOptions.indentType.default
-      );
-      expect(sanitizedOptions.requestTimeout).to.equal(
-        defaultOptions.requestTimeout.default
-      );
+      expect(sanitizedOptions.indentCount).to.equal(defaultOptions.indentCount.default);
+      expect(sanitizedOptions.indentType).to.equal(defaultOptions.indentType.default);
+      expect(sanitizedOptions.requestTimeout).to.equal(defaultOptions.requestTimeout.default);
     });
 
     it('should return the same object when default options are provided', function () {

@@ -1,8 +1,9 @@
 const _ = require('./lodash'),
-  sdk = require('@paloaltonetworks/postman-collection'),
+  sdk = require('postman-collection'),
   sanitizeOptions = require('./util').sanitizeOptions,
   sanitize = require('./util').sanitize,
   addFormParam = require('./util').addFormParam,
+
   parseRequest = require('./parseRequest');
 var self;
 
@@ -14,59 +15,61 @@ var self;
  * @param {Object} options
  * @returns {String} - nodejs(native) code snippet for given request object
  */
-function makeSnippet(request, indentString, options) {
-  var nativeModule = request.url.protocol === 'http' ? 'http' : 'https',
+function makeSnippet (request, indentString, options) {
+  var nativeModule = (request.url.protocol === 'http' ? 'http' : 'https'),
     snippet,
     optionsArray = [],
     postData = '',
-    url,
-    host,
-    path,
-    query;
+    url, host, path, query;
 
   if (options.ES6_enabled) {
     snippet = 'const ';
-  } else {
+  }
+  else {
     snippet = 'var ';
   }
   if (options.followRedirect) {
     snippet += `${nativeModule} = require('follow-redirects').${nativeModule};\n`;
-  } else {
+  }
+  else {
     snippet += `${nativeModule} = require('${nativeModule}');\n`;
   }
   if (options.ES6_enabled) {
     snippet += 'const ';
-  } else {
+  }
+  else {
     snippet += 'var ';
   }
-  snippet += "fs = require('fs');\n\n";
+  snippet += 'fs = require(\'fs\');\n\n';
   if (_.get(request, 'body.mode') && request.body.mode === 'urlencoded') {
     if (options.ES6_enabled) {
       snippet += 'const ';
-    } else {
+    }
+    else {
       snippet += 'var ';
     }
-    snippet += "qs = require('querystring');\n\n";
+    snippet += 'qs = require(\'querystring\');\n\n';
   }
   if (options.ES6_enabled) {
     snippet += 'let ';
-  } else {
+  }
+  else {
     snippet += 'var ';
   }
   snippet += 'options = {\n';
 
   /**
-   * creating string to represent options object using optionArray.join()
-   * example:
-   *  options: {
-   *      method: 'GET',
-   *      hostname: 'www.google.com',
-   *      path: '/x?a=10',
-   *      headers: {
-   *          'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'
-   *      }
-   *  }
-   */
+     * creating string to represent options object using optionArray.join()
+     * example:
+     *  options: {
+     *      method: 'GET',
+     *      hostname: 'www.google.com',
+     *      path: '/x?a=10',
+     *      headers: {
+     *          'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW'
+     *      }
+     *  }
+     */
 
   // The following code handles multiple files in the same formdata param.
   // It removes the form data params where the src property is an array of filepath strings
@@ -86,96 +89,61 @@ function makeSnippet(request, indentString, options) {
           // if src is an array(not empty), iterate over it and add files as separate form fields
           if (Array.isArray(param.src) && param.src.length) {
             param.src.forEach((filePath) => {
-              addFormParam(
-                formdataArray,
-                key,
-                param.type,
-                filePath,
-                disabled,
-                contentType
-              );
+              addFormParam(formdataArray, key, param.type, filePath, disabled, contentType);
             });
           }
           // if src is not an array or string, or is an empty array, add a placeholder for file path(no files case)
           else {
-            addFormParam(
-              formdataArray,
-              key,
-              param.type,
-              '/path/to/file',
-              disabled,
-              contentType
-            );
+            addFormParam(formdataArray, key, param.type, '/path/to/file', disabled, contentType);
           }
         }
         // if src is string, directly add the param with src as filepath
         else {
-          addFormParam(
-            formdataArray,
-            key,
-            param.type,
-            param.src,
-            disabled,
-            contentType
-          );
+          addFormParam(formdataArray, key, param.type, param.src, disabled, contentType);
         }
       }
       // if type is text, directly add it to formdata array
       else {
-        addFormParam(
-          formdataArray,
-          key,
-          param.type,
-          param.value,
-          disabled,
-          contentType
-        );
+        addFormParam(formdataArray, key, param.type, param.value, disabled, contentType);
       }
     });
     request.body.update({
       mode: 'formdata',
-      formdata: formdataArray,
+      formdata: formdataArray
     });
   }
   if (request.body && request.body[request.body.mode]) {
-    postData += parseRequest.parseBody(
-      request.body.toJSON(),
-      indentString,
-      options.trimRequestBody,
-      request.headers.get('Content-Type')
-    );
+    postData += parseRequest.parseBody(request.body.toJSON(), indentString, options.trimRequestBody,
+      request.headers.get('Content-Type'));
   }
   if (request.body && !request.headers.has('Content-Type')) {
     if (request.body.mode === 'file') {
       request.addHeader({
         key: 'Content-Type',
-        value: 'text/plain',
+        value: 'text/plain'
       });
-    } else if (request.body.mode === 'graphql') {
+    }
+    else if (request.body.mode === 'graphql') {
       request.addHeader({
         key: 'Content-Type',
-        value: 'application/json',
+        value: 'application/json'
       });
     }
   }
 
+
   url = sdk.Url.parse(request.url.toString());
   host = url.host ? url.host.join('.') : '';
   path = url.path ? '/' + url.path.join('/') : '/';
-  query = url.query
-    ? _.reduce(
-        url.query,
-        (accum, q) => {
-          accum.push(`${q.key}=${q.value}`);
-          return accum;
-        },
-        []
-      )
-    : [];
+  query = url.query ? _.reduce(url.query, (accum, q) => {
+    accum.push(`${q.key}=${q.value}`);
+    return accum;
+  }, []) : [];
 
   if (query.length > 0) {
     query = '?' + query.join('&');
-  } else {
+  }
+  else {
     query = '';
   }
 
@@ -184,19 +152,18 @@ function makeSnippet(request, indentString, options) {
   if (url.port) {
     optionsArray.push(`${indentString}'port': ${url.port}`);
   }
-  optionsArray.push(
-    `${indentString}'path': '${sanitize(path)}${sanitize(encodeURI(query))}'`
-  );
+  optionsArray.push(`${indentString}'path': '${sanitize(path)}${sanitize(encodeURI(query))}'`);
   optionsArray.push(parseRequest.parseHeader(request, indentString));
   if (options.followRedirect) {
-    optionsArray.push(indentString + "'maxRedirects': 20");
+    optionsArray.push(indentString + '\'maxRedirects\': 20');
   }
 
   snippet += optionsArray.join(',\n') + '\n';
   snippet += '};\n\n';
   if (options.ES6_enabled) {
     snippet += 'const ';
-  } else {
+  }
+  else {
     snippet += 'var ';
   }
   snippet += `req = ${nativeModule}.request(options, `;
@@ -204,7 +171,8 @@ function makeSnippet(request, indentString, options) {
     snippet += '(res) => {\n';
     snippet += indentString + 'let chunks = [];\n\n';
     snippet += indentString + 'res.on("data", (chunk) => {\n';
-  } else {
+  }
+  else {
     snippet += 'function (res) {\n';
     snippet += indentString + 'var chunks = [];\n\n';
     snippet += indentString + 'res.on("data", function (chunk) {\n';
@@ -215,7 +183,8 @@ function makeSnippet(request, indentString, options) {
   if (options.ES6_enabled) {
     snippet += indentString + 'res.on("end", (chunk) => {\n';
     snippet += indentString.repeat(2) + 'let body = Buffer.concat(chunks);\n';
-  } else {
+  }
+  else {
     snippet += indentString + 'res.on("end", function (chunk) {\n';
     snippet += indentString.repeat(2) + 'var body = Buffer.concat(chunks);\n';
   }
@@ -223,7 +192,8 @@ function makeSnippet(request, indentString, options) {
   snippet += indentString + '});\n\n';
   if (options.ES6_enabled) {
     snippet += indentString + 'res.on("error", (error) => {\n';
-  } else {
+  }
+  else {
     snippet += indentString + 'res.on("error", function (error) {\n';
   }
 
@@ -231,22 +201,22 @@ function makeSnippet(request, indentString, options) {
   snippet += indentString + '});\n';
   snippet += '});\n\n';
 
-  if (request.body && !_.isEmpty(request.body) && postData.length) {
+  if (request.body && !(_.isEmpty(request.body)) && postData.length) {
     if (options.ES6_enabled) {
       snippet += 'let ';
-    } else {
+    }
+    else {
       snippet += 'var ';
     }
     snippet += `postData = ${postData};\n\n`;
 
     if (request.method === 'DELETE') {
-      snippet += "req.setHeader('Content-Length', postData.length);\n\n";
+      snippet += 'req.setHeader(\'Content-Length\', postData.length);\n\n';
     }
 
     if (request.body.mode === 'formdata') {
-      snippet +=
-        "req.setHeader('content-type'," +
-        " 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW');\n\n";
+      snippet += 'req.setHeader(\'content-type\',' +
+            ' \'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW\');\n\n';
     }
 
     snippet += 'req.write(postData);\n\n';
@@ -277,68 +247,60 @@ function makeSnippet(request, indentString, options) {
  */
 self = module.exports = {
   /**
-   * Used to return options which are specific to a particular plugin
-   *
-   * @returns {Array}
-   */
+     * Used to return options which are specific to a particular plugin
+     *
+     * @returns {Array}
+     */
   getOptions: function () {
-    return [
-      {
-        name: 'Set indentation count',
-        id: 'indentCount',
-        type: 'positiveInteger',
-        default: 2,
-        description:
-          'Set the number of indentation characters to add per code level',
-      },
-      {
-        name: 'Set indentation type',
-        id: 'indentType',
-        type: 'enum',
-        availableOptions: ['Tab', 'Space'],
-        default: 'Space',
-        description: 'Select the character used to indent lines of code',
-      },
-      {
-        name: 'Set request timeout',
-        id: 'requestTimeout',
-        type: 'positiveInteger',
-        default: 0,
-        description:
-          'Set number of milliseconds the request should wait for a response' +
-          ' before timing out (use 0 for infinity)',
-      },
-      {
-        name: 'Follow redirects',
-        id: 'followRedirect',
-        type: 'boolean',
-        default: true,
-        description: 'Automatically follow HTTP redirects',
-      },
-      {
-        name: 'Trim request body fields',
-        id: 'trimRequestBody',
-        type: 'boolean',
-        default: false,
-        description:
-          "Remove white space and additional lines that may affect the server's response",
-      },
-      {
-        name: 'Enable ES6 features',
-        id: 'ES6_enabled',
-        type: 'boolean',
-        default: false,
-        description:
-          'Modifies code snippet to incorporate ES6 (EcmaScript) features',
-      },
-    ];
+    return [{
+      name: 'Set indentation count',
+      id: 'indentCount',
+      type: 'positiveInteger',
+      default: 2,
+      description: 'Set the number of indentation characters to add per code level'
+    },
+    {
+      name: 'Set indentation type',
+      id: 'indentType',
+      type: 'enum',
+      availableOptions: ['Tab', 'Space'],
+      default: 'Space',
+      description: 'Select the character used to indent lines of code'
+    },
+    {
+      name: 'Set request timeout',
+      id: 'requestTimeout',
+      type: 'positiveInteger',
+      default: 0,
+      description: 'Set number of milliseconds the request should wait for a response' +
+    ' before timing out (use 0 for infinity)'
+    },
+    {
+      name: 'Follow redirects',
+      id: 'followRedirect',
+      type: 'boolean',
+      default: true,
+      description: 'Automatically follow HTTP redirects'
+    },
+    {
+      name: 'Trim request body fields',
+      id: 'trimRequestBody',
+      type: 'boolean',
+      default: false,
+      description: 'Remove white space and additional lines that may affect the server\'s response'
+    },
+    {
+      name: 'Enable ES6 features',
+      id: 'ES6_enabled',
+      type: 'boolean',
+      default: false,
+      description: 'Modifies code snippet to incorporate ES6 (EcmaScript) features'
+    }];
   },
 
   convert: function (request, options, callback) {
     if (!_.isFunction(callback)) {
-      throw new Error(
-        'NodeJS-Request-Converter: callback is not valid function'
-      );
+      throw new Error('NodeJS-Request-Converter: callback is not valid function');
     }
     options = sanitizeOptions(options, self.getOptions());
 
@@ -349,5 +311,5 @@ self = module.exports = {
     indentString = indentString.repeat(options.indentCount);
 
     return callback(null, makeSnippet(request, indentString, options));
-  },
+  }
 };

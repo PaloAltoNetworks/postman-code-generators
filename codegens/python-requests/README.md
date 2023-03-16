@@ -30,7 +30,7 @@ It requires 3 mandatory parameters `request`, `callback` and `options`
 
 #### Example
 ```javascript
-sdk = require('@paloaltonetworks/postman-collection');
+sdk = require('postman-collection');
 
 var request = sdk.Request('https://www.google.com'),
     options = {indentType: 'Tab', indentCount: 4, followRediredirect: false, trimRequestBody: true, requestTimeout: 0};
